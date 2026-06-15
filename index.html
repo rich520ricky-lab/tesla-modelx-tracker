@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tesla Model X 🚗 FUSC Tracker — Los Angeles</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 40px 20px;
+      text-align: center;
+      border-bottom: 2px solid #e94560;
+    }
+    .header h1 { font-size: 2rem; color: #fff; margin-bottom: 8px; }
+    .header h1 span { color: #e94560; }
+    .header p { color: #aaa; font-size: 1rem; }
+    .header .badge {
+      display: inline-block;
+      background: #e94560;
+      color: #fff;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-top: 12px;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4e;
+      border-radius: 12px;
+      padding: 16px 28px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .stat-card .num { font-size: 1.8rem; font-weight: 700; color: #fff; }
+    .stat-card .label { font-size: 0.8rem; color: #888; margin-top: 4px; }
+    .stat-card.fusc .num { color: #4ecdc4; }
+    .last-updated {
+      text-align: center;
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+    .listing {
+      background: #12121f;
+      border: 1px solid #1e1e3a;
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .listing:hover { border-color: #e94560; }
+    .listing.fusc {
+      border-color: #4ecdc4;
+      background: #0d1f1f;
+    }
+    .listing.fusc .tag {
+      display: inline-block;
+      background: #4ecdc4;
+      color: #000;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 2px 10px;
+      border-radius: 10px;
+      margin-left: 8px;
+    }
+    .listing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .listing-title {
+      flex: 1;
+      min-width: 200px;
+    }
+    .listing-title a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .listing-title a:hover { color: #e94560; }
+    .listing-price {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #4ecdc4;
+      white-space: nowrap;
+    }
+    .listing-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #777;
+      flex-wrap: wrap;
+    }
+    .listing-meta span { display: flex; align-items: center; gap: 4px; }
+    .listing-meta .miles { color: #aaa; }
+    .listing-meta .seller { 
+      background: #1e1e3a;
+      padding: 1px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+    .listing-meta .seller.owner { color: #4ecdc4; }
+    .listing-meta .seller.dealer { color: #e94560; }
+    .listing-desc {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #999;
+      line-height: 1.5;
+      max-height: 3em;
+      overflow: hidden;
+    }
+    .listing-desc.expanded { max-height: none; }
+    .footer {
+      text-align: center;
+      padding: 30px;
+      color: #555;
+      font-size: 0.8rem;
+      border-top: 1px solid #1a1a2e;
+      margin-top: 40px;
+    }
+    .footer a { color: #e94560; text-decoration: none; }
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4e;
+      color: #aaa;
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover { border-color: #e94560; color: #fff; }
+    .filter-btn.active {
+      background: #e94560;
+      border-color: #e94560;
+      color: #fff;
+    }
+    .filter-btn.fusc-btn.active {
+      background: #4ecdc4;
+      border-color: #4ecdc4;
+      color: #000;
+    }
+    @media (max-width: 600px) {
+      .header h1 { font-size: 1.5rem; }
+      .listing-header { flex-direction: column; }
+    }
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #555;
+    }
+    .loading .spinner {
+      display: inline-block;
+      width: 40px; height: 40px;
+      border: 3px solid #1e1e3a;
+      border-top: 3px solid #e94560;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Tesla Model X <span>FUSC</span> Tracker</h1>
+    <p>Los Angeles — Used Model X with <strong>Free Unlimited Supercharging</strong></p>
+    <div class="badge">Updated daily 🔄</div>
+  </div>
+
+  <div class="container">
+    <div class="stats-bar" id="stats">
+      <div class="stat-card fusc"><div class="num" id="fuscCount">-</div><div class="label">⚡ Free Supercharging</div></div>
+      <div class="stat-card"><div class="num" id="totalCount">-</div><div class="label">Total Listings</div></div>
+      <div class="stat-card"><div class="num" id="avgPrice">-</div><div class="label">Avg FUSC Price</div></div>
+    </div>
+
+    <div class="last-updated" id="lastUpdated">Loading...</div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all" onclick="applyFilter('all')">All</button>
+      <button class="filter-btn fusc-btn active" data-filter="fusc" onclick="applyFilter('fusc')">⚡ Free Supercharging Only</button>
+    </div>
+
+    <div id="listings">
+      <div class="loading">
+        <div class="spinner"></div>
+        <div>Loading listings...</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Data sourced daily from Craigslist Los Angeles</p>
+      <p>Made with ❤️ by <a href="#">Rich T</a> | <a href="https://github.com/rich520ricky-lab/tesla-modelx-tracker">GitHub</a></p>
+    </div>
+  </div>
+
+  <script>
+    const listingsEl = document.getElementById('listings');
+    const fuscCountEl = document.getElementById('fuscCount');
+    const totalCountEl = document.getElementById('totalCount');
+    const avgPriceEl = document.getElementById('avgPrice');
+    const lastUpdatedEl = document.getElementById('lastUpdated');
+    let currentFilter = { all: true, fusc: true };
+
+    async function loadData() {
+      try {
+        const resp = await fetch('listings.json');
+        const data = await resp.json();
+        render(data.listings || []);
+        updateStats(data.listings || []);
+        lastUpdatedEl.textContent = 'Last updated: ' + (data.last_updated || 'unknown');
+      } catch(e) {
+        listingsEl.innerHTML = '<div style="text-align:center;padding:40px;color:#e94560;">Error loading data. Please try again.</div>';
+        console.error(e);
+      }
+    }
+
+    function isFUSC(listing) {
+      const txt = (listing.title + ' ' + listing.description).toLowerCase();
+      const fuscs = ['free supercharging', 'free unlimited supercharging',
+        'fusc', 'lifetime supercharging', 'unlimited supercharging',
+        'free supercharg'];
+      return fuscs.some(kw => txt.includes(kw)) && !txt.includes('does not have free supercharging');
+    }
+
+    function render(listings) {
+      const filtered = listings.filter(l => {
+        if (!currentFilter.all && !currentFilter.fusc) return false;
+        const fus = isFUSC(l);
+        if (currentFilter.fusc && !fus) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        listingsEl.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">No listings match your filter.</div>';
+        return;
+      }
+
+      let html = '';
+      for (const l of filtered) {
+        const fus = isFUSC(l);
+        html += `
+          <div class="listing ${fus ? 'fusc' : ''}">
+            <div class="listing-header">
+              <div class="listing-title">
+                <a href="${l.url}" target="_blank">${l.title}</a>
+                ${fus ? '<span class="tag">⚡ FREE SUPERCHARGING</span>' : ''}
+              </div>
+              <div class="listing-price">${l.price}</div>
+            </div>
+            <div class="listing-meta">
+              <span>📅 ${l.posted || '?'}</span>
+              <span class="miles">📍 ${l.location || 'LA'}</span>
+              ${l.mileage ? `<span class="miles">🔢 ${l.mileage} mi</span>` : ''}
+              <span class="seller ${l.seller_type || 'unknown'}">${(l.seller_type || 'unknown').toUpperCase()}</span>
+            </div>
+            <div class="listing-desc">${l.description || ''}</div>
+          </div>
+        `;
+      }
+      listingsEl.innerHTML = html;
+    }
+
+    function updateStats(listings) {
+      const total = listings.length;
+      const fusc = listings.filter(l => isFUSC(l));
+      const fuscCount = fusc.length;
+      
+      totalCountEl.textContent = total;
+      fuscCountEl.textContent = fuscCount;
+
+      const prices = fusc.map(l => parseInt(l.price.replace(/[$,]/g, ''))).filter(p => !isNaN(p));
+      if (prices.length > 0) {
+        const avg = Math.round(prices.reduce((a,b) => a+b, 0) / prices.length);
+        avgPriceEl.textContent = '$' + avg.toLocaleString();
+      } else {
+        avgPriceEl.textContent = '-';
+      }
+    }
+
+    function applyFilter(type) {
+      const btns = document.querySelectorAll('.filter-btn');
+      // Toggle logic: All button controls showing all, FUSC button controls filter
+      if (type === 'all') {
+        currentFilter.all = !currentFilter.all;
+        btns[0].classList.toggle('active');
+      } else if (type === 'fusc') {
+        currentFilter.fusc = !currentFilter.fusc;
+        btns[1].classList.toggle('active');
+      }
+      loadData();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
